@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Maze Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div class="brand-text">
+          <h1>AI Maze Agent</h1>
+          <p>Search algorithms + neural difficulty classification, working as one agent</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="status-dot" id="agentStatusDot"></span>
+        <span id="agentStatusText">Idle</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard">
+
+    <!-- ===== TOP ROW: MAZE + AGENT PANEL ===== -->
+    <section class="top-row">
+
+      <!-- LEFT: MAZE + CONTROLS -->
+      <div class="card maze-card">
+        <div class="card-head">
+          <h2>Maze Visualization</h2>
+          <div class="legend">
+            <span class="legend-item"><i class="sw sw-start"></i>Start</span>
+            <span class="legend-item"><i class="sw sw-goal"></i>Goal</span>
+            <span class="legend-item"><i class="sw sw-wall"></i>Wall</span>
+            <span class="legend-item"><i class="sw sw-visited"></i>Visited</span>
+            <span class="legend-item"><i class="sw sw-path"></i>Path</span>
+          </div>
+        </div>
+
+        <div class="maze-panel" id="panelMaze">
+          <div class="maze-panel-title" id="mazePanelTitle">Current Maze</div>
+          <div class="grid" id="mazeGrid"></div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-primary" id="btnGenerate">New Maze</button>
+          <button class="btn" id="btnBFS">Run BFS</button>
+          <button class="btn" id="btnAstar">Run A*</button>
+          <button class="btn btn-accent" id="btnAgent">Let Agent Decide</button>
+          <button class="btn btn-ghost" id="btnReset">Reset</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: AGENT STATUS -->
+      <div class="card agent-card">
+        <div class="card-head">
+          <h2>Agent Status</h2>
+        </div>
+
+        <div class="agent-grid">
+          <div class="stat-tile">
+            <span class="stat-label">Maze Difficulty</span>
+            <span class="stat-value" id="difficultyValue">—</span>
+          </div>
+          <div class="stat-tile">
+            <span class="stat-label">Confidence</span>
+            <span class="stat-value" id="confidenceValue">—</span>
+          </div>
+          <div class="stat-tile">
+            <span class="stat-label">Current Algorithm</span>
+            <span class="stat-value" id="currentAlgoValue">—</span>
+          </div>
+          <div class="stat-tile">
+            <span class="stat-label">Model Status</span>
+            <span class="stat-value" id="modelStatusValue">Loading…</span>
+          </div>
+        </div>
+
+        <div class="confidence-bars" id="confidenceBars">
+          <div class="conf-row">
+            <span>EASY</span>
+            <div class="conf-track"><div class="conf-fill conf-easy" id="barEasy"></div></div>
+            <span id="pctEasy">0%</span>
+          </div>
+          <div class="conf-row">
+            <span>MEDIUM</span>
+            <div class="conf-track"><div class="conf-fill conf-medium" id="barMedium"></div></div>
+            <span id="pctMedium">0%</span>
+          </div>
+          <div class="conf-row">
+            <span>HARD</span>
+            <div class="conf-track"><div class="conf-fill conf-hard" id="barHard"></div></div>
+            <span id="pctHard">0%</span>
+          </div>
+        </div>
+
+        <div class="feature-list" id="featureList">
+          <h3>Maze Features</h3>
+          <div class="feature-row"><span>Size</span><span id="featSize">—</span></div>
+          <div class="feature-row"><span>Wall Density</span><span id="featDensity">—</span></div>
+          <div class="feature-row"><span>Start→Goal Distance</span><span id="featDistance">—</span></div>
+          <div class="feature-row"><span>Open Cells</span><span id="featOpen">—</span></div>
+          <div class="feature-row"><span>Dead Ends</span><span id="featDeadEnds">—</span></div>
+        </div>
+
+        <div class="agent-reason" id="agentReason">
+          Run "Let Agent Decide" to see why the agent picked an algorithm.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== PERFORMANCE COMPARISON ===== -->
+    <section class="card compare-card">
+      <div class="card-head">
+        <h2>Performance Comparison</h2>
+        <span class="hint-text">Run BFS then A* (in either order) to fill this in</span>
+      </div>
+
+      <table class="compare-table">
+        <thead>
+          <tr><th>Metric</th><th>BFS</th><th>A*</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Path Length</td><td id="tblBfsPath">—</td><td id="tblAstarPath">—</td></tr>
+          <tr><td>Nodes Expanded</td><td id="tblBfsExpanded">—</td><td id="tblAstarExpanded">—</td></tr>
+          <tr><td>Execution Time</td><td id="tblBfsTime">—</td><td id="tblAstarTime">—</td></tr>
+          <tr><td>Solution Found</td><td id="tblBfsFound">—</td><td id="tblAstarFound">—</td></tr>
+        </tbody>
+      </table>
+
+      <div class="conclusion" id="conclusionBox">
+        Run both algorithms to generate a comparison conclusion.
+      </div>
+    </section>
+
+    <!-- ===== NEURAL NETWORK ===== -->
+    <section class="card nn-card">
+      <div class="card-head">
+        <h2>Neural Network</h2>
+      </div>
+      <div class="nn-body">
+        <div class="nn-col">
+          <h3>Training Status</h3>
+          <div class="training-log" id="trainingLog">Initializing model…</div>
+          <div class="progress-track"><div class="progress-fill" id="trainingProgress"></div></div>
+        </div>
+        <div class="nn-col">
+          <h3>Classification Result</h3>
+          <div class="nn-result">
+            <div class="nn-result-label" id="nnResultLabel">Maze Difficulty: —</div>
+            <div class="nn-result-sub" id="nnResultSub">Waiting for maze features…</div>
+          </div>
+        </div>
+        <div class="nn-col">
+          <h3>Held-Out Test Evaluation</h3>
+          <div class="nn-result">
+            <div class="nn-result-label" id="testAccValue">Test Accuracy: —</div>
+            <div class="nn-result-sub" id="testSetInfo">—</div>
+            <table class="confusion-table" id="confusionTable">
+              <thead>
+                <tr><th>Actual \ Pred.</th><th>EASY</th><th>MEDIUM</th><th>HARD</th></tr>
+              </thead>
+              <tbody id="confusionBody">
+                <tr><td>EASY</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>MEDIUM</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>HARD</td><td>—</td><td>—</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Flask + scikit-learn backend · BFS &amp; A* search · MLP difficulty classifier
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
