@@ -1,47 +1,46 @@
 # 🧩 Maze Agent
 
-An AI agent that learns to navigate and solve mazes.
-
-![demo](assets/demo.gif)
+A small AI agent that looks at a maze, **predicts how hard it is** with a neural network, and then **chooses the search algorithm** (BFS or A\*) it expects to work best. Everything is visualized in a web UI.
 
 ## ✨ Features
-- 🧠 Solves mazes with **[A* / BFS / Q-learning, pick yours]**
-- 🎲 Random maze generation (DFS / Prim's)
-- 📊 Visualization of the agent's path and training progress
-- ⚙️ Configurable maze size and difficulty
+- 🎲 Random maze generation (recursive backtracker / DFS) in 5 sizes
+- 🧠 Difficulty classifier (EASY / MEDIUM / HARD): scikit-learn `MLPClassifier`, trained on synthetic mazes at startup
+- 🤖 Agent that picks BFS or A\* from the prediction and explains why
+- 🔍 Manual BFS and A\* runs to compare explored nodes and path length
+- 📊 Training log and model evaluation shown in the UI
 
 ## 🚀 Quick Start
 ```bash
-git clone https://github.com/<username>/maze-agent.git
-cd maze-agent
+git clone https://github.com/hxnx444/Maze-Agent.git
+cd Maze-Agent
 pip install -r requirements.txt
-python main.py
+python app.py
 ```
+Then open **http://localhost:5000**. The model trains when the server starts, so the first launch takes a few seconds.
 
-## 🕹️ Usage
-```bash
-python main.py --size 20 --algo qlearning --render
-```
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--size` | Maze dimensions | `10` |
-| `--algo` | Agent algorithm | `astar` |
-| `--render` | Show visualization | `false` |
+## 🔌 API
+| Method | Route | Purpose |
+|--------|-------|---------|
+| `GET` | `/api/state` | Current maze, features, prediction, training log |
+| `POST` | `/api/new-maze` | Generate a new maze |
+| `POST` | `/api/run/<bfs\|astar>` | Run one algorithm |
+| `POST` | `/api/run-agent` | Predict difficulty, let the agent pick, run it |
 
 ## 📁 Structure
 ```
-maze-agent/
-├── agent/       # agent logic
-├── maze/        # maze generation
-├── main.py
+Maze-Agent/
+├── app.py            # Flask server + API
+├── agent.py          # picks BFS or A* from the prediction
+├── algorithms.py     # BFS and A* implementations
+├── maze.py           # maze generation + feature extraction
+├── ml_model.py       # synthetic data, MLP training, prediction
+├── templates/        # index.html
+├── static/           # script.js, style.css
 └── requirements.txt
 ```
 
-## 🛣️ Roadmap
-- [ ] Add reinforcement learning agent
-- [ ] Compare algorithms with benchmarks
-- [ ] Web demo
+## 🛠️ Stack
+Python · Flask · scikit-learn · NumPy · vanilla JS
 
 ## 📄 License
 MIT
